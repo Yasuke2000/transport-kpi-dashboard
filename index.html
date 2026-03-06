@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Transport & Logistics KPI Dashboard - Real-time monitoring of shipment performance, delivery metrics, and cost analysis">
+    <meta name="author" content="David Delporte">
+    <title>Transport KPI Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Generating transport data...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="header__left">
+            <button class="header__menu-btn" id="sidebar-toggle" aria-label="Toggle filters sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="header__brand">
+                <svg class="header__icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <div>
+                    <h1 class="header__title">Transport KPI Dashboard</h1>
+                    <p class="header__subtitle" id="report-timestamp">Last updated: --</p>
+                </div>
+            </div>
+        </div>
+        <div class="header__right">
+            <button class="btn btn--icon" id="dark-mode-toggle" aria-label="Toggle dark mode">
+                <svg id="dark-mode-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <button class="btn btn--icon" id="print-btn" aria-label="Print dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+            </button>
+            <button class="btn btn--primary" id="export-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export to Excel</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar" id="sidebar" role="complementary" aria-label="Filters">
+            <div class="sidebar__header">
+                <h2 class="sidebar__title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    Filters
+                </h2>
+                <button class="sidebar__close" id="sidebar-close" aria-label="Close filters">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar__content">
+                <!-- Search -->
+                <div class="filter-group">
+                    <label class="filter-group__label" for="search-input">Search</label>
+                    <div class="search-box">
+                        <svg class="search-box__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="search-input" class="search-box__input" placeholder="Order ID, customer..." aria-label="Search by order ID or customer name">
+                    </div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="filter-group">
+                    <label class="filter-group__label">Date Range</label>
+                    <div class="date-presets">
+                        <button class="date-preset" data-days="7">7 days</button>
+                        <button class="date-preset active" data-days="30">30 days</button>
+                        <button class="date-preset" data-days="60">60 days</button>
+                        <button class="date-preset" data-days="90">90 days</button>
+                    </div>
+                    <div class="date-custom">
+                        <div class="date-field">
+                            <label for="date-from">From</label>
+                            <input type="date" id="date-from" class="input">
+                        </div>
+                        <div class="date-field">
+                            <label for="date-to">To</label>
+                            <input type="date" id="date-to" class="input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Type -->
+                <div class="filter-group">
+                    <label class="filter-group__label">Route Type</label>
+                    <div class="checkbox-group" id="route-type-filters">
+                        <label class="checkbox">
+                            <input type="checkbox" value="UK-EU" checked>
+                            <span class="checkbox__mark"></span>
+                            UK - EU
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Ireland-EU" checked>
+                            <span class="checkbox__mark"></span>
+                            Ireland - EU
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Intra-EU" checked>
+                            <span class="checkbox__mark"></span>
+                            Intra-EU
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="filter-group">
+                    <label class="filter-group__label">Status</label>
+                    <div class="checkbox-group" id="status-filters">
+                        <label class="checkbox">
+                            <input type="checkbox" value="Delivered" checked>
+                            <span class="checkbox__mark"></span>
+                            <span class="status-badge status-badge--delivered">Delivered</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="In Transit" checked>
+                            <span class="checkbox__mark"></span>
+                            <span class="status-badge status-badge--transit">In Transit</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Delayed" checked>
+                            <span class="checkbox__mark"></span>
+                            <span class="status-badge status-badge--delayed">Delayed</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Cancelled" checked>
+                            <span class="checkbox__mark"></span>
+                            <span class="status-badge status-badge--cancelled">Cancelled</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Transport Type -->
+                <div class="filter-group">
+                    <label class="filter-group__label">Transport Type</label>
+                    <div class="checkbox-group" id="transport-type-filters">
+                        <label class="checkbox">
+                            <input type="checkbox" value="Road" checked>
+                            <span class="checkbox__mark"></span>
+                            Road
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Ferry" checked>
+                            <span class="checkbox__mark"></span>
+                            Ferry
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Rail" checked>
+                            <span class="checkbox__mark"></span>
+                            Rail
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" value="Multimodal" checked>
+                            <span class="checkbox__mark"></span>
+                            Multimodal
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Cost Range -->
+                <div class="filter-group">
+                    <label class="filter-group__label">Cost Range</label>
+                    <div class="range-slider">
+                        <div class="range-slider__values">
+                            <span id="cost-min-display">&#8364;0</span>
+                            <span id="cost-max-display">&#8364;10,000</span>
+                        </div>
+                        <div class="range-slider__track">
+                            <input type="range" id="cost-min" min="0" max="10000" value="0" step="100" aria-label="Minimum cost">
+                            <input type="range" id="cost-max" min="0" max="10000" value="10000" step="100" aria-label="Maximum cost">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="sidebar__actions">
+                <button class="btn btn--primary btn--full" id="apply-filters-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Apply Filters
+                </button>
+                <button class="btn btn--secondary btn--full" id="reset-filters-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    Reset Filters
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar Overlay (mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="main" role="main">
+            <!-- KPI Cards -->
+            <section class="kpi-section" aria-label="Key Performance Indicators">
+                <div class="kpi-grid">
+                    <div class="kpi-card" data-kpi="totalShipments">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">Total Shipments</span>
+                            <div class="kpi-card__icon kpi-card__icon--blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-total-shipments">--</div>
+                        <div class="kpi-card__trend" id="kpi-total-shipments-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-shipments" height="40"></canvas>
+                    </div>
+
+                    <div class="kpi-card" data-kpi="onTimeDelivery">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">On-Time Delivery</span>
+                            <div class="kpi-card__icon kpi-card__icon--green">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-on-time">--%</div>
+                        <div class="kpi-card__trend" id="kpi-on-time-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-ontime" height="40"></canvas>
+                    </div>
+
+                    <div class="kpi-card" data-kpi="avgDelay">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">Avg Delay Time</span>
+                            <div class="kpi-card__icon kpi-card__icon--yellow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-avg-delay">-- min</div>
+                        <div class="kpi-card__trend" id="kpi-avg-delay-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-delay" height="40"></canvas>
+                    </div>
+
+                    <div class="kpi-card" data-kpi="totalRevenue">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">Total Revenue</span>
+                            <div class="kpi-card__icon kpi-card__icon--purple">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-total-revenue">&#8364;--</div>
+                        <div class="kpi-card__trend" id="kpi-total-revenue-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-revenue" height="40"></canvas>
+                    </div>
+
+                    <div class="kpi-card" data-kpi="avgCost">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">Avg Cost / Shipment</span>
+                            <div class="kpi-card__icon kpi-card__icon--orange">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-avg-cost">&#8364;--</div>
+                        <div class="kpi-card__trend" id="kpi-avg-cost-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-cost" height="40"></canvas>
+                    </div>
+
+                    <div class="kpi-card" data-kpi="activeRoutes">
+                        <div class="kpi-card__header">
+                            <span class="kpi-card__label">Active Routes</span>
+                            <div class="kpi-card__icon kpi-card__icon--teal">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="kpi-card__value" id="kpi-active-routes">--</div>
+                        <div class="kpi-card__trend" id="kpi-active-routes-trend"></div>
+                        <canvas class="kpi-card__sparkline" id="sparkline-routes" height="40"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section" aria-label="Charts and Analytics">
+                <!-- Row 1: Volume + Performance -->
+                <div class="charts-grid charts-grid--two">
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <h3 class="chart-card__title">Shipment Volume Over Time</h3>
+                            <div class="chart-card__controls">
+                                <button class="chart-range-btn active" data-range="30">30D</button>
+                                <button class="chart-range-btn" data-range="60">60D</button>
+                                <button class="chart-range-btn" data-range="90">90D</button>
+                            </div>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="chart-volume"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <h3 class="chart-card__title">Delivery Performance by Route</h3>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="chart-performance"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Cost + Delay -->
+                <div class="charts-grid charts-grid--three">
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <h3 class="chart-card__title">Cost by Transport Type</h3>
+                        </div>
+                        <div class="chart-card__body chart-card__body--doughnut">
+                            <canvas id="chart-cost"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <h3 class="chart-card__title">Delay Distribution</h3>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="chart-delay"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card__header">
+                            <h3 class="chart-card__title">Top Routes by Volume</h3>
+                        </div>
+                        <div class="chart-card__body">
+                            <canvas id="chart-routes"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Table Section -->
+            <section class="table-section" aria-label="Shipment Data Table">
+                <div class="table-card">
+                    <div class="table-card__header">
+                        <h3 class="table-card__title">Shipment Details</h3>
+                        <div class="table-card__meta">
+                            <span id="table-count">0 records</span>
+                            <button class="btn btn--secondary btn--sm" id="export-table-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Export Table
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table" id="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="data-table__th sortable" data-sort="orderId">Order ID <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="route">Route <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="departure">Departure <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="arrival">Arrival <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="status">Status <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="delay">Delay <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="cost">Cost <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="transportType">Type <span class="sort-icon"></span></th>
+                                    <th class="data-table__th sortable" data-sort="customer">Customer <span class="sort-icon"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="table-pagination" id="pagination">
+                        <button class="btn btn--secondary btn--sm" id="prev-page" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                            Previous
+                        </button>
+                        <div class="pagination-info">
+                            Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                        </div>
+                        <button class="btn btn--secondary btn--sm" id="next-page">
+                            Next
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="data-generator.js"></script>
+    <script src="chart-utils.js"></script>
+    <script src="export-utils.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
