@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "description": "Sample transport and logistics data for KPI dashboard",
+    "generatedBy": "TransportDataGenerator",
+    "recordCount": "750 (generated at runtime)",
+    "coverageDays": 90,
+    "version": "1.0"
+  },
+  "schema": {
+    "orderId": "TR-2024-XXXXX - Unique order identifier",
+    "origin": "Departure city",
+    "destination": "Arrival city",
+    "route": "Origin → Destination display string",
+    "routeType": "UK-EU | Ireland-EU | Intra-EU",
+    "departure": "ISO 8601 departure datetime",
+    "scheduledArrival": "ISO 8601 scheduled arrival datetime",
+    "actualArrival": "ISO 8601 actual arrival datetime (null if in transit/cancelled)",
+    "status": "Delivered | In Transit | Delayed | Cancelled",
+    "delayMinutes": "Number - minutes of delay (0 = on-time)",
+    "cost": "Number - shipment cost in EUR",
+    "distance": "Number - distance in km",
+    "transportType": "Road | Ferry | Rail | Multimodal",
+    "customer": "String - customer company name",
+    "travelTimeMinutes": "Number - expected travel time in minutes"
+  },
+  "routes": [
+    { "origin": "Dover", "destination": "Calais", "type": "UK-EU", "distance_km": 55 },
+    { "origin": "Dover", "destination": "Dunkirk", "type": "UK-EU", "distance_km": 68 },
+    { "origin": "Felixstowe", "destination": "Rotterdam", "type": "UK-EU", "distance_km": 192 },
+    { "origin": "Felixstowe", "destination": "Antwerp", "type": "UK-EU", "distance_km": 175 },
+    { "origin": "Southampton", "destination": "Le Havre", "type": "UK-EU", "distance_km": 185 },
+    { "origin": "London", "destination": "Brussels", "type": "UK-EU", "distance_km": 370 },
+    { "origin": "London", "destination": "Paris", "type": "UK-EU", "distance_km": 460 },
+    { "origin": "Dublin", "destination": "Zeebrugge", "type": "Ireland-EU", "distance_km": 880 },
+    { "origin": "Dublin", "destination": "Rotterdam", "type": "Ireland-EU", "distance_km": 930 },
+    { "origin": "Dublin", "destination": "Antwerp", "type": "Ireland-EU", "distance_km": 860 },
+    { "origin": "Cork", "destination": "Le Havre", "type": "Ireland-EU", "distance_km": 640 },
+    { "origin": "Rotterdam", "destination": "Antwerp", "type": "Intra-EU", "distance_km": 100 },
+    { "origin": "Rotterdam", "destination": "Hamburg", "type": "Intra-EU", "distance_km": 460 },
+    { "origin": "Antwerp", "destination": "Paris", "type": "Intra-EU", "distance_km": 310 },
+    { "origin": "Zeebrugge", "destination": "Amsterdam", "type": "Intra-EU", "distance_km": 245 },
+    { "origin": "Brussels", "destination": "Frankfurt", "type": "Intra-EU", "distance_km": 400 }
+  ],
+  "statusDistribution": {
+    "Delivered": "80%",
+    "In Transit": "12%",
+    "Delayed": "6%",
+    "Cancelled": "2%"
+  },
+  "customers": [
+    "NorthStar Logistics", "EuroFreight Solutions", "Atlantic Cargo Ltd",
+    "Continental Transport BV", "Maritime Express", "Celtic Shipping Co",
+    "TransEuropa GmbH", "Channel Freight Services", "Nordic Haulage AS",
+    "Benelux Distribution", "Irish Sea Freight", "Hanseatic Logistics",
+    "Albion Transport", "Bruges Forwarding", "Rhine Valley Carriers",
+    "Cross-Channel Cargo", "Euro-Atlantic Freight", "Meridian Haulage",
+    "TideWater Logistics", "Highland Express", "Port City Transport",
+    "Oceanic Carriers", "FlandersLink NV", "DoverStar Freight",
+    "SeaBridge Logistics", "PanEurope Cargo", "Emerald Isle Shipping",
+    "ChannelBridge Transport", "Continental Connect", "EastPort Forwarding"
+  ]
+}
