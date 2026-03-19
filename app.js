@@ -569,8 +569,10 @@ const App = (() => {
     // --- Dark Mode ---
     const toggleDarkMode = () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        // Add transition class for smooth theme switch
+        document.body.classList.add('theme-transitioning');
         if (isDark) {
-            document.documentElement.removeAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', 'light');
             localStorage.setItem('darkMode', 'false');
         } else {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -579,6 +581,8 @@ const App = (() => {
         // Re-render charts for theme
         updateCharts();
         updateSparklines();
+        // Remove transition class after animation
+        setTimeout(() => document.body.classList.remove('theme-transitioning'), 350);
     };
 
     // --- Keyboard Shortcuts ---
