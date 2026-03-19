@@ -318,11 +318,13 @@ const App = (() => {
         const pageData = sorted.slice(start, start + ROWS_PER_PAGE);
 
         const tbody = document.getElementById('table-body');
-        tbody.innerHTML = pageData.map(record => {
+        const fragment = document.createDocumentFragment();
+        pageData.forEach(record => {
             const statusClass = record.status === 'Delivered' ? 'delivered' :
                                 record.status === 'In Transit' ? 'transit' :
                                 record.status === 'Delayed' ? 'delayed' : 'cancelled';
-            return `<tr>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
                 <td><strong>${record.orderId}</strong></td>
                 <td>${record.route}</td>
                 <td>${formatDateTime(record.departure)}</td>
@@ -331,9 +333,11 @@ const App = (() => {
                 <td>${record.delayMinutes > 0 ? record.delayMinutes + ' min' : '-'}</td>
                 <td>${formatCurrency(record.cost)}</td>
                 <td>${record.transportType}</td>
-                <td>${record.customer}</td>
-            </tr>`;
-        }).join('');
+                <td>${record.customer}</td>`;
+            fragment.appendChild(tr);
+        });
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
 
         // Update pagination
         document.getElementById('table-count').textContent = `${sorted.length} records`;
